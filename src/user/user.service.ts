@@ -1,34 +1,120 @@
-import { Injectable } from '@nestjs/common';
-import { User } from './user.entity';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Users } from './user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateUserDTO, UpdateUserDTO } from './user.dto';
 
 @Injectable()
 export class UserService {
-  private users: User[] = [];
-  private idCounter = 1;
+  constructor(
+    @InjectRepository(Users)
+    private usersRepository: Repository<Users>,
+  ) {}
 
-  findAll(): User[] {
-    return this.users;
-  }
-
-  findOne(id: number): User | undefined {
-    return this.users.find((user) => user.id === id);
-  }
-
-  create(user: User): User {
-    user.id = this.idCounter++;
-    this.users.push(user);
-    return user;
-  }
-
-  update(id: number, updatedUser: Partial<User>): User | undefined {
-    const user = this.findOne(id);
-    if (user) {
-      Object.assign(user, updatedUser);
+  // List all the user details
+  async findAll() {
+    try {
+      const allUser = await this.usersRepository.find();
+      if (allUser) {
+        return allUser;
+      }
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    } catch (error) {
+      throw new HttpException(
+        `Error finding user : ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    return user;
   }
 
-  delete(id: number): void {
-    this.users = this.users.filter((user) => user.id !== id);
+  // Display single user by using id
+  async findOne(id: number) {
+    try {
+      const singleUser = await this.usersRepository.findOneBy({ id });
+      if (singleUser) {
+        return singleUser;
+      }
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    } catch (err) {
+      throw new HttpException(
+        `Error finding user using the id: ${err}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  // Display single user by using name
+  async findName(name: string) {
+    const user = await this.usersRepository.findOneBy({ name });
+    try {
+      if (user) {
+        return user;
+      }
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    } catch (err) {
+      throw new HttpException(
+        `Error finding user using the name: ${err}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  // Create new user
+  async create(userDTO: CreateUserDTO) {
+    try {
+      const newUser = this.usersRepository.create(userDTO);
+      const createdUser = await this.usersRepository.save(newUser);
+      return createdUser;
+    } catch (err) {
+      throw new HttpException(
+        `Error creating user: ${err}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  // Update user
+  async update(id: number, updateUserDTO: UpdateUserDTO) {
+    let user = await this.findOne(id);
+    try {
+      const updatedUser = { ...user, ...updateUserDTO };
+      user = updatedUser;
+      const updated = await this.usersRepository.update(id, user);
+      // return updated;
+      if (updated?.affected ?? 0 > 0) {
+        return {
+          message: 'User updated successfully',
+        };
+      }
+    } catch (error) {
+      throw new HttpException(
+        `Error updating user: ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  // Delete user
+  async remove(id: number) {
+    try {
+      if (await this.findOne(id)) {
+        await this.usersRepository.delete(id);
+        return {
+          message: 'User deleted successfully',
+        };
+      }
+      throw new NotFoundException(`User with ID ${id} not found`);
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        `Error deleting user: ${err}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
