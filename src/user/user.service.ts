@@ -17,7 +17,9 @@ export class UserService {
   ) {}
 
   // List all the user details
-  async findAll() {
+  async findAll(query) {
+    console.log(query, 'sssssssssssssssssss');
+
     try {
       const allUser = await this.usersRepository
         .createQueryBuilder('user')

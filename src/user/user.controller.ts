@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDTO, UpdateUserDTO } from './user.dto';
+import { query } from 'express';
 
 @Controller('users')
 export class UserController {
@@ -17,8 +18,8 @@ export class UserController {
 
   // get all the user details
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Query() query: string) {
+    return this.userService.findAll(query);
   }
 
   /**
