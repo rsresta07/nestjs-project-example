@@ -3,12 +3,14 @@ import { Project } from './project.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateProjectDTO } from './project.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
     private projectRepository: Repository<Project>,
+    private userService: UserService,
   ) {}
 
   async findAll() {
@@ -24,9 +26,11 @@ export class ProjectService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(projectId: number) {
     try {
-      const singleProject = await this.projectRepository.findOneBy({ id });
+      const singleProject = await this.projectRepository.findOneBy({
+        projectId,
+      });
       if (singleProject) {
         return singleProject;
       }
@@ -40,12 +44,22 @@ export class ProjectService {
     }
   }
 
-  async create(createProjectDTO: CreateProjectDTO) {
+  async create(projectDTO: CreateProjectDTO) {
     try {
-      const newProject = this.projectRepository.create(createProjectDTO);
-      const createdProject = await this.projectRepository.save(newProject);
-      return createdProject;
+      const user = await this.userService.findOne(projectDTO.user);
+      if (user != null) {
+        const newProject = this.projectRepository.create({
+          ...projectDTO,
+          user: user,
+        });
+        const createdProject = await this.projectRepository.save(newProject);
+        return createdProject;
+      }
     } catch (err) {
+      if (err instanceof HttpException) {
+        // Handle specific error type
+        throw new HttpException(err.message, err.getStatus());
+      }
       throw new HttpException(
         `Error creating project: ${err}`,
         HttpStatus.BAD_REQUEST,
@@ -53,24 +67,24 @@ export class ProjectService {
     }
   }
 
-  async update(id: number, updatedProjectDTO: CreateProjectDTO) {
-    let project = await this.findOne(id);
-    try {
-      const updatedProject = { ...project, ...updatedProjectDTO };
-      project = updatedProject;
-      const updated = await this.projectRepository.update(id, project);
-      if (updated?.affected ?? 0 > 0) {
-        return {
-          message: 'Project updated successfully',
-        };
-      }
-    } catch (error) {
-      throw new HttpException(
-        `Error updating project: ${error}`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
+  // async update(id: number, updatedProjectDTO: CreateProjectDTO) {
+  //   let project = await this.findOne(id);
+  //   try {
+  //     const updatedProject = { ...project, ...updatedProjectDTO };
+  //     project = updatedProject;
+  //     const updated = await this.projectRepository.update(id, project);
+  //     if (updated?.affected ?? 0 > 0) {
+  //       return {
+  //         message: 'Project updated successfully',
+  //       };
+  //     }
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       `Error updating project: ${error}`,
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  // }
 
   async remove(id: number) {
     try {

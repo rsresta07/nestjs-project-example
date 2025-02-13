@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { IsOptional, IsString } from 'class-validator';
 
+// This is for the Create User
 export class CreateUserDTO {
   @IsString()
   name: string;
@@ -9,6 +9,7 @@ export class CreateUserDTO {
   email: string;
 }
 
+// This is for the Update user details
 export class UpdateUserDTO {
   @IsString()
   @IsOptional()

@@ -33,23 +33,20 @@ export class UserService {
   }
 
   // Display single user by using id
-  async findOne(id: number) {
+  async findOne(user_id: number) {
     try {
-      const singleUser = await this.usersRepository.findOneBy({ id });
+      const singleUser = await this.usersRepository.findOneBy({ user_id });
       if (singleUser) {
         return singleUser;
       }
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     } catch (err) {
-      throw new HttpException(
-        `Error finding user using the id: ${err}`,
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException(`${err}`, HttpStatus.BAD_REQUEST);
     }
   }
 
   // Display single user by using name
-  async findName(name: string) {
+  async findName(name: string, sort: string) {
     const user = await this.usersRepository.findOneBy({ name });
     try {
       if (user) {
@@ -80,12 +77,8 @@ export class UserService {
 
   // Update user
   async update(id: number, updateUserDTO: UpdateUserDTO) {
-    let user = await this.findOne(id);
     try {
-      const updatedUser = { ...user, ...updateUserDTO };
-      user = updatedUser;
-      const updated = await this.usersRepository.update(id, user);
-      // return updated;
+      const updated = await this.usersRepository.update(id, updateUserDTO);
       if (updated?.affected ?? 0 > 0) {
         return {
           message: 'User updated successfully',
