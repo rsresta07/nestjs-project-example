@@ -20,13 +20,13 @@ export class ProjectController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectService.findOne(+id);
+  findOneProjectById(@Param('id') id: string) {
+    return this.projectService.findOneProjectById(+id);
   }
 
   @Post('create')
-  create(@Body() project: CreateProjectDTO) {
-    return this.projectService.create(project);
+  createProject(@Body() project: CreateProjectDTO) {
+    return this.projectService.createProject(project);
   }
 
   // @Put(':id')
@@ -35,7 +35,7 @@ export class ProjectController {
   // }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.projectService.remove(+id);
+  removeProject(@Param('id') id: string) {
+    return this.projectService.removeProject(+id);
   }
 }

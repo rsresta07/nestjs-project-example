@@ -15,26 +15,23 @@ export class ProjectService {
 
   async findAll() {
     try {
-      const allProject = await this.projectRepository.find();
-      if (allProject) {
-        return allProject;
-      }
-      throw new HttpException('Project not found', HttpStatus.NOT_FOUND);
+      const allProject = await this.projectRepository
+        .createQueryBuilder('project')
+        .getMany();
+      return allProject;
     } catch (error) {
       console.log(error);
       throw new HttpException('Error finding project', HttpStatus.BAD_REQUEST);
     }
   }
 
-  async findOne(projectId: number) {
+  async findOneProjectById(projectId: number) {
     try {
-      const singleProject = await this.projectRepository.findOneBy({
-        projectId,
-      });
-      if (singleProject) {
-        return singleProject;
-      }
-      throw new HttpException('Project not found', HttpStatus.NOT_FOUND);
+      const singleProject = await this.projectRepository
+        .createQueryBuilder('project')
+        .where('project.project_id = :projectId', { projectId })
+        .getOneOrFail();
+      return singleProject;
     } catch (error) {
       console.log(error);
       throw new HttpException(
@@ -44,9 +41,9 @@ export class ProjectService {
     }
   }
 
-  async create(projectDTO: CreateProjectDTO) {
+  async createProject(projectDTO: CreateProjectDTO) {
     try {
-      const user = await this.userService.findOne(projectDTO.user);
+      const user = await this.userService.findOneUserById(projectDTO.user);
       if (user != null) {
         const newProject = this.projectRepository.create({
           ...projectDTO,
@@ -86,9 +83,15 @@ export class ProjectService {
   //   }
   // }
 
-  async remove(id: number) {
+  async removeProject(id: number) {
     try {
-      if (await this.findOne(id)) {
+      const removedProject = await this.projectRepository
+        .createQueryBuilder()
+        .delete()
+        .from(Project)
+        .where('project_id = :id', { id })
+        .execute();
+      if (removedProject) {
         await this.projectRepository.delete(id);
         return {
           message: 'Project deleted successfully',

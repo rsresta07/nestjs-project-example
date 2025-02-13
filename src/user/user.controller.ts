@@ -27,8 +27,8 @@ export class UserController {
    * use `localhost:3000/users/1`
    */
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  findOneUserById(@Param('id') id: string) {
+    return this.userService.findOneUserById(+id);
   }
 
   /**
@@ -37,8 +37,8 @@ export class UserController {
    * use `localhost:3000/users/search/John`
    */
   @Get('search')
-  findName(@Query('name') name: string, @Query('sort') sort: string) {
-    return this.userService.findName(name, sort);
+  findUserByName(@Query('name') name: string, @Query('sort') sort: string) {
+    return this.userService.findUserByName(name, sort);
   }
 
   /**
@@ -47,7 +47,7 @@ export class UserController {
    * use `localhost:3000/users/create`
    */
   @Post('create')
-  create(@Body() user: CreateUserDTO) {
+  createUser(@Body() user: CreateUserDTO) {
     return this.userService.create(user);
   }
 
@@ -57,7 +57,7 @@ export class UserController {
    * use `localhost:3000/users/1`
    */
   @Put(':id')
-  update(@Param('id') id: string, @Body() updatedUser: UpdateUserDTO) {
+  updateUser(@Param('id') id: string, @Body() updatedUser: UpdateUserDTO) {
     return this.userService.update(+id, updatedUser);
   }
 
@@ -67,7 +67,7 @@ export class UserController {
    * use `localhost:3000/users/1`
    */
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  removeUser(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
 }

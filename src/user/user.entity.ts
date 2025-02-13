@@ -21,6 +21,6 @@ export class Users {
   @CreateDateColumn()
   created_at: Date;
 
-  @OneToMany(() => Project, (project) => project.user)
+  @OneToMany(() => Project, (project) => project.user, { cascade: true })
   projects: Project[];
 }

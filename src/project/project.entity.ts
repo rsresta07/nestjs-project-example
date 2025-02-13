@@ -22,7 +22,7 @@ export class Project {
   @CreateDateColumn()
   created_on: Date;
 
-  @ManyToOne(() => Users, (user) => user.projects)
+  @ManyToOne(() => Users, (user) => user.projects, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: Users;
 }
