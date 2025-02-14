@@ -20,8 +20,10 @@ export class ProjectService {
         .getMany();
       return allProject;
     } catch (error) {
-      console.log(error);
-      throw new HttpException('Error finding project', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        `Error finding project: ${error}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -33,9 +35,8 @@ export class ProjectService {
         .getOneOrFail();
       return singleProject;
     } catch (error) {
-      console.log(error);
       throw new HttpException(
-        'Error finding project using the id',
+        'Error finding project using the id: ' + error,
         HttpStatus.BAD_REQUEST,
       );
     }

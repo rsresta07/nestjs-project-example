@@ -10,16 +10,15 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDTO, UpdateUserDTO } from './user.dto';
-import { query } from 'express';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   // get all the user details
-  @Get()
-  findAll(@Query() query: string) {
-    return this.userService.findAll(query);
+  @Get('all')
+  findAll() {
+    return this.userService.findAll();
   }
 
   /**
@@ -27,7 +26,7 @@ export class UserController {
    * Request : GET
    * use `localhost:3000/users/1`
    */
-  @Get(':id')
+  @Get('id/:id')
   findOneUserById(@Param('id') id: string) {
     return this.userService.findOneUserById(+id);
   }
@@ -42,6 +41,11 @@ export class UserController {
     return this.userService.findUserByName(name, sort);
   }
 
+  @Get('searchRole')
+  findUserByRole(@Query('role') role: string, @Query('sort') sort: string) {
+    // return { message: role };
+    return this.userService.findUserByRole(role, sort);
+  }
   /**
    * create (post) new user
    * Request : POST

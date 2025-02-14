@@ -7,6 +7,9 @@ export class CreateUserDTO {
 
   @IsString()
   email: string;
+
+  @IsString()
+  role: string;
 }
 
 // This is for the Update user details
@@ -18,4 +21,8 @@ export class UpdateUserDTO {
   @IsString()
   @IsOptional()
   email?: string;
+
+  @IsString()
+  @IsOptional()
+  role?: string;
 }

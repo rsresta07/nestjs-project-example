@@ -17,9 +17,7 @@ export class UserService {
   ) {}
 
   // List all the user details
-  async findAll(query) {
-    console.log(query, 'sssssssssssssssssss');
-
+  async findAll() {
     try {
       const allUser = await this.usersRepository
         .createQueryBuilder('user')
@@ -63,12 +61,15 @@ export class UserService {
 
   // Display single user by using name
   async findUserByName(name: string, sort: string) {
-    const user = await this.usersRepository.findOneBy({ name });
     try {
-      if (user) {
-        return user;
-      }
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      const orderDirection = sort.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+      const user = await this.usersRepository
+        .createQueryBuilder('user')
+        .where('user.name = :name', { name })
+        .orderBy('user.name', orderDirection)
+        .getMany();
+      return user;
     } catch (err) {
       throw new HttpException(
         `Error finding user using the name: ${err}`,
@@ -77,9 +78,32 @@ export class UserService {
     }
   }
 
-  // We use the first function to create user as it is to just insert... personal preferences
+  // Display user by role
+  async findUserByRole(role: string, sort: string) {
+    try {
+      const orderDirection = sort.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+      const byRole = await this.usersRepository
+        .createQueryBuilder('user')
+        .where('user.role = :role', { role })
+        .orderBy('user.user_id', orderDirection)
+        .getMany();
+      return byRole;
+    } catch (err) {
+      if (err instanceof HttpException) {
+        // Handle specific error type
+        throw new HttpException(err.message, err.getStatus());
+      } else {
+        throw new HttpException(
+          `Error finding user using the role: ${err}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+  }
 
-  // Create new user
+  //! We use the first function to create user as it is to just insert... personal preferences
+
+  //? Create new user
   async create(userDTO: CreateUserDTO) {
     try {
       const newUser = this.usersRepository.create(userDTO);
@@ -93,25 +117,25 @@ export class UserService {
     }
   }
 
-  // Create new user using QueryBuilder
-  async createUser(userDTO: CreateUserDTO) {
-    try {
-      const newUser = this.usersRepository.create(userDTO);
-      const createdUser = await this.usersRepository
-        .createQueryBuilder()
-        .insert()
-        .into(Users)
-        .values(newUser)
-        .execute();
-      // .save(newUser);
-      return createdUser;
-    } catch (err) {
-      throw new HttpException(
-        `Error creating user: ${err}`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
+  //? Create new user using QueryBuilder
+  // async createUser(userDTO: CreateUserDTO) {
+  //   try {
+  //     const newUser = this.usersRepository.create(userDTO);
+  //     const createdUser = await this.usersRepository
+  //       .createQueryBuilder()
+  //       .insert()
+  //       .into(Users)
+  //       .values(newUser)
+  //       .execute();
+  //     // .save(newUser);
+  //     return createdUser;
+  //   } catch (err) {
+  //     throw new HttpException(
+  //       `Error creating user: ${err}`,
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  // }
 
   // Update user
   async update(id: number, updateUserDTO: UpdateUserDTO) {
